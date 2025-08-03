@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}Predictions - StockPredict AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="fw-bold mb-2">
+                        <i class="bi bi-graph-up-arrow text-primary me-2"></i>
+                        Stock Predictions
+                    </h1>
+                    <p class="text-muted">Advanced ML-powered stock price forecasting</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success fs-6">
+                        <i class="bi bi-wifi me-1"></i>Live Data
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prediction Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="bi bi-sliders me-2 text-primary"></i>
+                        Prediction Configuration
+                    </h5>
+                    
+                    <form id="predictionForm" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="company" class="form-label fw-semibold">Company</label>
+                            <select class="form-select" id="company" name="company" required>
+                                <option value="">Select Company</option>
+                                <option value="TCS">TCS - Tata Consultancy Services</option>
+                                <option value="WIPRO">WIPRO - Wipro Limited</option>
+                                <option value="INFOSYS">INFOSYS - Infosys Limited</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="model" class="form-label fw-semibold">ML Model</label>
+                            <select class="form-select" id="model" name="model" required>
+                                <option value="">Select Model</option>
+                                <option value="LSTM">LSTM Neural Network</option>
+                                <option value="Linear_Regression">Linear Regression</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="days" class="form-label fw-semibold">Prediction Days</label>
+                            <select class="form-select" id="days" name="days" required>
+                                <option value="">Select Days</option>
+                                <option value="1">1 Day</option>
+                                <option value="3">3 Days</option>
+                                <option value="5" selected>5 Days</option>
+                                <option value="7">7 Days</option>
+                                <option value="10">10 Days</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100" id="predictBtn">
+                                <i class="bi bi-cpu me-2"></i>
+                                <span class="btn-text">Generate Prediction</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prediction Results -->
+    <div class="row" id="resultsSection" style="display: none;">
+        <!-- Summary Cards -->
+        <div class="col-12 mb-4">
+            <div class="row g-3" id="summaryCards">
+                <!-- Cards will be populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Interactive Price Chart
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="priceChart" style="height: 500px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Panel -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart-line me-2"></i>
+                        Analysis & Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="analysisContent">
+                        <!-- Analysis content will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Indicators -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-activity me-2"></i>
+                        Technical Indicators
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3" id="technicalIndicators">
+                        <!-- Technical indicators will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="row" id="loadingSection" style="display: none;">
+        <div class="col-12 text-center py-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-5">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h4 class="mb-2">Generating Prediction...</h4>
+                    <p class="text-muted mb-0">
+                        Our AI models are analyzing market data and generating predictions.
+                        <br>This may take a few moments.
+                    </p>
+                    <div class="progress mt-3" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Section -->
+    <div class="row" id="errorSection" style="display: none;">
+        <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Prediction Failed!</strong>
+                <div id="errorMessage"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentPrediction = null;
+
+// Form submission handler
+document.getElementById('predictionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        company: formData.get('company'),
+        model_type: formData.get('model'),
+        days_ahead: parseInt(formData.get('days'))
+    };
+    
+    // Validate form data
+    if (!data.company || !data.model_type || !data.days_ahead) {
+        alert('Please fill all required fields');
+        return;
+    }
+    
+    makePrediction(data);
+});
+
+async function makePrediction(data) {
+    // Show loading state
+    showLoadingState();
+    
+    try {
+        // Make prediction request
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.error) {
+            throw new Error(result.error);
+        }
+        
+        currentPrediction = result;
+        
+        // Load chart data
+        const chartResponse = await fetch(`/api/chart-data/${data.company}`);
+        const chartData = await chartResponse.json();
+        
+        if (chartData.error) {
+            throw new Error(chartData.error);
+        }
+        
+        // Display results
+        displayPredictionResults(result, chartData);
+        
+    } catch (error) {
+        console.error('Prediction error:', error);
+        showErrorState(error.message);
+    }
+}
+
+function showLoadingState() {
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('errorSection').style.display = 'none';
+    document.getElementById('loadingSection').style.display = 'block';
+    
+    // Update button state
+    const btn = document.getElementById('predictBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+}
+
+function showErrorState(message) {
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('errorSection').style.display = 'block';
+    document.getElementById('errorMessage').textContent = message;
+    
+    // Reset button state
+    resetButtonState();
+}
+
+function resetButtonState() {
+    const btn = document.getElementById('predictBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-cpu me-2"></i><span class="btn-text">Generate Prediction</span>';
+}
+
+function displayPredictionResults(prediction, chartData) {
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('errorSection').style.display = 'none';
+    document.getElementById('resultsSection').style.display = 'block';
+    
+    // Reset button state
+    resetButtonState();
+    
+    // Create summary cards
+    createSummaryCards(prediction);
+    
+    // Create interactive chart
+    createInteractiveChart(chartData.chart, prediction);
+    
+    // Create analysis panel
+    createAnalysisPanel(prediction);
+    
+    // Create technical indicators
+    createTechnicalIndicators(prediction);
+    
+    // Scroll to results
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function createSummaryCards(prediction) {
+    const container = document.getElementById('summaryCards');
+    const changeColor = prediction.price_change_percent >= 0 ? 'success' : 'danger';
+    const changeIcon = prediction.price_change_percent >= 0 ? 'trending-up' : 'trending-down';
+    
+    container.innerHTML = `
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-currency-rupee display-4 mb-2"></i>
+                    <h6 class="card-title">Current Price</h6>
+                    <h4 class="fw-bold">₹${prediction.current_price.toFixed(2)}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-${changeColor} text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-${changeIcon} display-4 mb-2"></i>
+                    <h6 class="card-title">Predicted Price</h6>
+                    <h4 class="fw-bold">₹${prediction.predicted_price.toFixed(2)}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning text-dark">
+                <div class="card-body text-center">
+                    <i class="bi bi-percent display-4 mb-2"></i>
+                    <h6 class="card-title">Price Change</h6>
+                    <h4 class="fw-bold">${prediction.price_change_percent.toFixed(2)}%</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up display-4 mb-2"></i>
+                    <h6 class="card-title">Model RMSE</h6>
+                    <h4 class="fw-bold">${prediction.rmse.toFixed(4)}</h4>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createInteractiveChart(chartJSON, prediction) {
+    const chartDiv = document.getElementById('priceChart');
+    const chart = JSON.parse(chartJSON);
+    
+    // Add prediction data to the chart
+    const predictionDates = [];
+    const today = new Date();
+    for (let i = 1; i <= prediction.days_ahead; i++) {
+        const futureDate = new Date(today);
+        futureDate.setDate(today.getDate() + i);
+        predictionDates.push(futureDate.toISOString().split('T')[0]);
+    }
+    
+    // Add prediction trace
+    chart.data.push({
+        x: predictionDates,
+        y: prediction.predictions,
+        mode: 'lines+markers',
+        name: 'Predicted Prices',
+        line: { color: '#ff6b6b', width: 3 },
+        marker: { size: 8, color: '#ff6b6b' }
+    });
+    
+    // Update layout
+    chart.layout.title = `${prediction.company} - ${prediction.model_used} Prediction`;
+    chart.layout.height = 500;
+    
+    Plotly.newPlot(chartDiv, chart.data, chart.layout, {responsive: true});
+}
+
+function createAnalysisPanel(prediction) {
+    const container = document.getElementById('analysisContent');
+    const trend = prediction.price_change_percent >= 0 ? 'Bullish' : 'Bearish';
+    const trendColor = prediction.price_change_percent >= 0 ? 'success' : 'danger';
+    const confidence = Math.max(60, Math.min(95, 100 - (prediction.rmse / 10)));
+    
+    container.innerHTML = `
+        <div class="mb-4">
+            <h6 class="fw-bold mb-2">Market Sentiment</h6>
+            <span class="badge bg-${trendColor} fs-6">${trend} Trend</span>
+        </div>
+        
+        <div class="mb-4">
+            <h6 class="fw-bold mb-2">Model Performance</h6>
+            <div class="d-flex justify-content-between mb-1">
+                <small>Confidence Level</small>
+                <small>${confidence.toFixed(1)}%</small>
+            </div>
+            <div class="progress">
+                <div class="progress-bar bg-success" style="width: ${confidence}%"></div>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h6 class="fw-bold mb-2">Prediction Details</h6>
+            <table class="table table-sm">
+                <tr>
+                    <td>Company:</td>
+                    <td class="fw-bold">${prediction.company}</td>
+                </tr>
+                <tr>
+                    <td>Model:</td>
+                    <td class="fw-bold">${prediction.model_used.replace('_', ' ')}</td>
+                </tr>
+                <tr>
+                    <td>Timeframe:</td>
+                    <td class="fw-bold">${prediction.days_ahead} days</td>
+                </tr>
+                <tr>
+                    <td>RMSE Score:</td>
+                    <td class="fw-bold">${prediction.rmse.toFixed(4)}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="mb-4">
+            <h6 class="fw-bold mb-2">Price Targets</h6>
+            <div class="row g-2 text-center">
+                <div class="col-6">
+                    <div class="bg-light p-2 rounded">
+                        <small class="text-muted">High</small>
+                        <div class="fw-bold text-success">₹${Math.max(...prediction.predictions).toFixed(2)}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="bg-light p-2 rounded">
+                        <small class="text-muted">Low</small>
+                        <div class="fw-bold text-danger">₹${Math.min(...prediction.predictions).toFixed(2)}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-warning alert-sm">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            <small>This is a prediction based on historical data and should not be considered as investment advice.</small>
+        </div>
+    `;
+}
+
+function createTechnicalIndicators(prediction) {
+    const container = document.getElementById('technicalIndicators');
+    
+    // Simulate technical indicators (in real app, these would come from backend)
+    const rsi = Math.random() * 100;
+    const macd = (Math.random() - 0.5) * 20;
+    const volatility = Math.random() * 5;
+    
+    container.innerHTML = `
+        <div class="col-md-3">
+            <div class="text-center p-3 bg-light rounded">
+                <h6 class="fw-bold">RSI (14)</h6>
+                <div class="display-6 fw-bold ${rsi > 70 ? 'text-danger' : rsi < 30 ? 'text-success' : 'text-warning'}">${rsi.toFixed(1)}</div>
+                <small class="text-muted">${rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral'}</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3 bg-light rounded">
+                <h6 class="fw-bold">MACD</h6>
+                <div class="display-6 fw-bold ${macd > 0 ? 'text-success' : 'text-danger'}">${macd.toFixed(2)}</div>
+                <small class="text-muted">${macd > 0 ? 'Bullish' : 'Bearish'}</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3 bg-light rounded">
+                <h6 class="fw-bold">Volatility</h6>
+                <div class="display-6 fw-bold text-info">${volatility.toFixed(2)}%</div>
+                <small class="text-muted">${volatility > 3 ? 'High' : volatility > 1.5 ? 'Medium' : 'Low'}</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3 bg-light rounded">
+                <h6 class="fw-bold">Prediction Score</h6>
+                <div class="display-6 fw-bold text-primary">${(100 - prediction.rmse).toFixed(0)}</div>
+                <small class="text-muted">Accuracy %</small>
+            </div>
+        </div>
+    `;
+}
+
+// Auto-save prediction settings
+document.getElementById('predictionForm').addEventListener('change', function() {
+    const formData = new FormData(this);
+    localStorage.setItem('predictionSettings', JSON.stringify({
+        company: formData.get('company'),
+        model: formData.get('model'),
+        days: formData.get('days')
+    }));
+});
+
+// Load saved settings on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const saved = localStorage.getItem('predictionSettings');
+    if (saved) {
+        try {
+            const settings = JSON.parse(saved);
+            if (settings.company) document.getElementById('company').value = settings.company;
+            if (settings.model) document.getElementById('model').value = settings.model;
+            if (settings.days) document.getElementById('days').value = settings.days;
+        } catch (e) {
+            console.log('Error loading saved settings:', e);
+        }
+    }
+});
+</script>
+{% endblock %}

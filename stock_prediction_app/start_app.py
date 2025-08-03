@@ -75,13 +75,14 @@ def show_menu():
     """Show startup menu"""
     print("\n🎛️  Choose startup option:")
     print("1. 🚀 Start Backend Only")
-    print("2. 🎨 Start Frontend Only") 
-    print("3. 🔄 Start Both (Recommended)")
-    print("4. 📋 View System Information")
-    print("5. 🛠️  Install Dependencies")
-    print("6. ❌ Exit")
+    print("2. 🎨 Start Tkinter Frontend Only") 
+    print("3. 🔄 Start Both (Backend + Tkinter)")
+    print("4. 🌐 Start Dynamic Web Frontend")
+    print("5. 📋 View System Information")
+    print("6. 🛠️  Install Dependencies")
+    print("7. ❌ Exit")
     
-    choice = input("\nEnter your choice (1-6): ").strip()
+    choice = input("\nEnter your choice (1-7): ").strip()
     return choice
 
 def show_system_info():
@@ -157,17 +158,25 @@ def main():
             break
             
         elif choice == '4':
-            show_system_info()
+            if check_dependencies():
+                print("🌐 Starting Dynamic Web Frontend...")
+                print("📊 This will start the modern web interface with real-time features")
+                print("🔗 Web interface will open at http://localhost:5001")
+                subprocess.run([sys.executable, "run_web_frontend.py"], check=True)
+            break
             
         elif choice == '5':
-            install_dependencies()
+            show_system_info()
             
         elif choice == '6':
+            install_dependencies()
+            
+        elif choice == '7':
             print("👋 Goodbye!")
             break
             
         else:
-            print("❌ Invalid choice. Please enter 1-6.")
+            print("❌ Invalid choice. Please enter 1-7.")
 
 if __name__ == '__main__':
     try:

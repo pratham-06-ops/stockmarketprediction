@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Home - StockPredict AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient text-white py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-75">
+                <div class="col-lg-6">
+                    <div class="hero-content animate-fade-in">
+                        <h1 class="display-4 fw-bold mb-4">
+                            <i class="bi bi-graph-up-arrow text-warning me-3"></i>
+                            StockPredict AI
+                        </h1>
+                        <p class="lead mb-4">
+                            Harness the power of advanced machine learning to predict stock prices 
+                            with unprecedented accuracy. Our LSTM neural networks and technical analysis 
+                            tools give you the edge in market predictions.
+                        </p>
+                        <div class="hero-buttons">
+                            {% if not session.user_id %}
+                                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg me-3 animate-pulse">
+                                    <i class="bi bi-rocket-takeoff me-2"></i>
+                                    Get Started
+                                </a>
+                                <a href="{{ url_for('about') }}" class="btn btn-outline-light btn-lg">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Learn More
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('predictions') }}" class="btn btn-warning btn-lg me-3">
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    Make Prediction
+                                </a>
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg">
+                                    <i class="bi bi-speedometer2 me-2"></i>
+                                    Dashboard
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual text-center">
+                        <div class="chart-preview">
+                            <canvas id="heroChart" width="500" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Market Data -->
+    <section class="market-section py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="fw-bold">
+                        <i class="bi bi-activity me-2 text-primary"></i>
+                        Live Market Overview
+                    </h2>
+                    <p class="text-muted">Real-time stock data for supported companies</p>
+                </div>
+            </div>
+            
+            <div class="row" id="marketData">
+                {% if market_data %}
+                    {% for stock in market_data %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card market-card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="stock-icon mb-3">
+                                    <i class="bi bi-building display-4 text-primary"></i>
+                                </div>
+                                <h4 class="card-title fw-bold">{{ stock.company }}</h4>
+                                <div class="price-display mb-3">
+                                    <span class="price-value">₹{{ "%.2f"|format(stock.price) }}</span>
+                                </div>
+                                <div class="price-change">
+                                    <span class="badge bg-{{ 'success' if stock.trend == 'up' else 'danger' if stock.trend == 'down' else 'secondary' }} change-badge">
+                                        <i class="bi bi-{{ 'trending-up' if stock.trend == 'up' else 'trending-down' if stock.trend == 'down' else 'dash' }}"></i>
+                                        {{ "%.2f"|format(stock.change) }}%
+                                    </span>
+                                </div>
+                                <div class="mt-3">
+                                    <small class="text-muted">Avg: ₹{{ "%.2f"|format(stock.average) }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Market data will be displayed when the backend is connected.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="fw-bold">
+                        <i class="bi bi-stars me-2 text-warning"></i>
+                        Powerful Features
+                    </h2>
+                    <p class="text-muted">Everything you need for successful stock market predictions</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card text-center h-100">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-cpu-fill display-4 text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold">LSTM Neural Networks</h5>
+                        <p class="text-muted">
+                            Advanced deep learning models with 3-layer LSTM architecture 
+                            for accurate time series prediction.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card text-center h-100">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-bar-chart-line-fill display-4 text-success"></i>
+                        </div>
+                        <h5 class="fw-bold">Technical Analysis</h5>
+                        <p class="text-muted">
+                            RSI, Moving Averages, Bollinger Bands, and other technical 
+                            indicators for comprehensive market analysis.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card text-center h-100">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-graph-up display-4 text-warning"></i>
+                        </div>
+                        <h5 class="fw-bold">Interactive Charts</h5>
+                        <p class="text-muted">
+                            Dynamic, interactive charts with Plotly.js for detailed 
+                            visualization of predictions and historical data.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card text-center h-100">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-shield-check-fill display-4 text-info"></i>
+                        </div>
+                        <h5 class="fw-bold">Secure Platform</h5>
+                        <p class="text-muted">
+                            Enterprise-grade security with encrypted passwords, 
+                            session management, and role-based access control.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats-section py-5">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="3">0</div>
+                        <div class="stat-label">Companies Supported</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="2">0</div>
+                        <div class="stat-label">ML Models</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="95">0</div>
+                        <div class="stat-label">Accuracy %</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="10">0</div>
+                        <div class="stat-label">Max Days Prediction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    {% if not session.user_id %}
+    <section class="cta-section py-5 bg-primary text-white">
+        <div class="container text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h2 class="fw-bold mb-4">
+                        Ready to Start Predicting?
+                    </h2>
+                    <p class="lead mb-4">
+                        Join thousands of users who trust our AI-powered predictions 
+                        for their investment decisions.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg me-3">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Create Account
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<!-- Auto-refresh market data -->
+<script>
+// Auto-refresh market data every 30 seconds
+setInterval(function() {
+    fetch('/api/market-overview')
+        .then(response => response.json())
+        .then(data => {
+            updateMarketData(data);
+        })
+        .catch(error => console.log('Market data update failed:', error));
+}, 30000);
+
+function updateMarketData(data) {
+    // Update market cards with new data
+    const cards = document.querySelectorAll('.market-card');
+    data.forEach((stock, index) => {
+        if (cards[index]) {
+            const priceValue = cards[index].querySelector('.price-value');
+            const changeBadge = cards[index].querySelector('.change-badge');
+            
+            if (priceValue) {
+                priceValue.textContent = `₹${stock.price.toFixed(2)}`;
+                // Add animation for price changes
+                priceValue.classList.add('price-update');
+                setTimeout(() => priceValue.classList.remove('price-update'), 1000);
+            }
+            
+            if (changeBadge) {
+                changeBadge.innerHTML = `
+                    <i class="bi bi-${stock.trend === 'up' ? 'trending-up' : stock.trend === 'down' ? 'trending-down' : 'dash'}"></i>
+                    ${stock.change.toFixed(2)}%
+                `;
+                changeBadge.className = `badge bg-${stock.trend === 'up' ? 'success' : stock.trend === 'down' ? 'danger' : 'secondary'} change-badge`;
+            }
+        }
+    });
+}
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Animated counter for statistics
+function animateCounters() {
+    const counters = document.querySelectorAll('.stat-number');
+    
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 2000; // 2 seconds
+        const increment = target / (duration / 16); // 60fps
+        let current = 0;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            counter.textContent = Math.floor(current);
+        }, 16);
+    });
+}
+
+// Hero chart animation
+function createHeroChart() {
+    const ctx = document.getElementById('heroChart');
+    if (!ctx) return;
+    
+    // Sample data for demo chart
+    const data = {
+        labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+        datasets: [{
+            label: 'Stock Price',
+            data: [3580, 3635, 3662, 3688, 3705, 3745, 3782],
+            borderColor: '#ffc107',
+            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    display: false
+                },
+                x: {
+                    display: false
+                }
+            },
+            elements: {
+                point: {
+                    radius: 0
+                }
+            }
+        }
+    });
+}
+
+// Initialize animations when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate counters when they come into view
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounters();
+                observer.unobserve(entry.target);
+            }
+        });
+    });
+    
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) {
+        observer.observe(statsSection);
+    }
+    
+    // Create hero chart
+    createHeroChart();
+});
+</script>
+{% endblock %}

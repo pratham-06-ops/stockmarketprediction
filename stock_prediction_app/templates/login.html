@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Login - StockPredict AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-graph-up-arrow display-4 text-primary mb-3"></i>
+                        <h2 class="fw-bold">Welcome Back</h2>
+                        <p class="text-muted">Sign in to your account</p>
+                    </div>
+
+                    <!-- Login Type Toggle -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="btn-group w-100" role="group" aria-label="Login type">
+                                <input type="radio" class="btn-check" name="loginType" id="userLogin" value="user" checked>
+                                <label class="btn btn-outline-primary" for="userLogin">
+                                    <i class="bi bi-person me-2"></i>User Login
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="loginType" id="adminLogin" value="admin">
+                                <label class="btn btn-outline-primary" for="adminLogin">
+                                    <i class="bi bi-shield-check me-2"></i>Admin Login
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form method="POST" id="loginForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       placeholder="Enter your username" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="Enter your password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="is_admin" id="isAdminField" value="false">
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">
+                                    Remember me
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3" id="loginButton">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Sign In
+                        </button>
+                    </form>
+
+                    <!-- Admin Credentials Hint -->
+                    <div id="adminHint" class="alert alert-info" style="display: none;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Admin Credentials:</strong><br>
+                        Username: <code>admin</code><br>
+                        Password: <code>admin123</code>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="text-center my-4">
+                        <span class="text-muted">Don't have an account?</span>
+                    </div>
+
+                    <!-- Register Link -->
+                    <div class="text-center">
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Create New Account
+                        </a>
+                    </div>
+
+                    <!-- Quick Features -->
+                    <div class="mt-4 pt-4 border-top">
+                        <h6 class="text-center text-muted mb-3">Why Choose Us?</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <i class="bi bi-cpu text-primary mb-2" style="font-size: 1.5rem;"></i>
+                                <small class="d-block text-muted">AI Powered</small>
+                            </div>
+                            <div class="col-4">
+                                <i class="bi bi-shield-check text-success mb-2" style="font-size: 1.5rem;"></i>
+                                <small class="d-block text-muted">Secure</small>
+                            </div>
+                            <div class="col-4">
+                                <i class="bi bi-graph-up text-warning mb-2" style="font-size: 1.5rem;"></i>
+                                <small class="d-block text-muted">Accurate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const userLoginRadio = document.getElementById('userLogin');
+    const adminLoginRadio = document.getElementById('adminLogin');
+    const isAdminField = document.getElementById('isAdminField');
+    const adminHint = document.getElementById('adminHint');
+    const loginButton = document.getElementById('loginButton');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('password');
+
+    // Handle login type toggle
+    function updateLoginType() {
+        const isAdmin = adminLoginRadio.checked;
+        isAdminField.value = isAdmin ? 'true' : 'false';
+        
+        if (isAdmin) {
+            adminHint.style.display = 'block';
+            loginButton.innerHTML = '<i class="bi bi-shield-check me-2"></i>Admin Sign In';
+            loginButton.className = 'btn btn-danger w-100 mb-3';
+        } else {
+            adminHint.style.display = 'none';
+            loginButton.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Sign In';
+            loginButton.className = 'btn btn-primary w-100 mb-3';
+        }
+    }
+
+    userLoginRadio.addEventListener('change', updateLoginType);
+    adminLoginRadio.addEventListener('change', updateLoginType);
+
+    // Password toggle functionality
+    togglePassword.addEventListener('click', function() {
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        if (type === 'password') {
+            icon.className = 'bi bi-eye';
+        } else {
+            icon.className = 'bi bi-eye-slash';
+        }
+    });
+
+    // Remember me functionality
+    const rememberMe = document.getElementById('rememberMe');
+    const usernameField = document.getElementById('username');
+
+    // Load saved username if remember me was checked
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    if (savedUsername) {
+        usernameField.value = savedUsername;
+        rememberMe.checked = true;
+    }
+
+    // Form submission handling
+    const loginForm = document.getElementById('loginForm');
+    loginForm.addEventListener('submit', function(e) {
+        const username = usernameField.value;
+        
+        // Save username if remember me is checked
+        if (rememberMe.checked) {
+            localStorage.setItem('rememberedUsername', username);
+        } else {
+            localStorage.removeItem('rememberedUsername');
+        }
+
+        // Show loading state
+        loginButton.disabled = true;
+        const isAdmin = adminLoginRadio.checked;
+        const loadingText = isAdmin ? 
+            '<span class="spinner-border spinner-border-sm me-2"></span>Signing in as Admin...' :
+            '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+        loginButton.innerHTML = loadingText;
+    });
+
+    // Auto-fill admin credentials when admin tab is selected
+    adminLoginRadio.addEventListener('change', function() {
+        if (this.checked && !usernameField.value) {
+            usernameField.value = 'admin';
+            passwordField.value = 'admin123';
+        }
+    });
+
+    // Clear admin credentials when switching to user login
+    userLoginRadio.addEventListener('change', function() {
+        if (this.checked && usernameField.value === 'admin') {
+            usernameField.value = '';
+            passwordField.value = '';
+        }
+    });
+
+    // Add enter key support for form fields
+    [usernameField, passwordField].forEach(field => {
+        field.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+    });
+
+    // Initialize login type
+    updateLoginType();
+});
+</script>
+{% endblock %}
