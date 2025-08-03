@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu, Search, Bell, User } from 'lucide-react';
+import ConnectionStatus from '../ConnectionStatus/ConnectionStatus';
 
 const Header = ({ onMenuClick }) => {
   return (
@@ -34,6 +35,8 @@ const Header = ({ onMenuClick }) => {
             <button className="p-2 text-gray-400 hover:text-gray-500">
               <Bell className="h-5 w-5" />
             </button>
+
+            <ConnectionStatus />
             
             <div className="flex items-center space-x-3">
               <button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
